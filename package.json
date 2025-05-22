@@ -1,0 +1,21 @@
+{
+  "name": "auriga-setup-ai",
+  "version": "1.0.0",
+  "description": "Desktop application to assist with iRacing car setup creation and adjustment using AI",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter electron dev & pnpm --filter renderer dev",
+    "build": "pnpm --filter renderer build && pnpm --filter electron build",
+    "package": "pnpm --filter electron package",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "clean": "rm -rf node_modules && pnpm -r exec -- rm -rf node_modules dist .turbo"
+  },
+  "keywords": ["iracing", "setup", "ai", "electron", "react"],
+  "author": "Maxime Musin",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

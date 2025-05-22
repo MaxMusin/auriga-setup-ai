@@ -1,0 +1,64 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+build
+release
+out
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Electron specific
+release/
+.electron-builder.env
+
+# Testing
+coverage
+
+# Cache
+.turbo
+.eslintcache
+.stylelintcache
+
+# Vite
+*.local
+
+# Temporary files
+tmp
+temp
+
+# iRacing setup files (if you want to exclude test files)
+# *.sto
+# *.json
+
+# Telemetry data (if you want to exclude test files)
+# *.csv
