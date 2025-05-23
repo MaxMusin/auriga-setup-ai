@@ -53,6 +53,9 @@ importers:
       react-router-dom:
         specifier: ^6.11.1
         version: 6.30.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      setup-parser:
+        specifier: workspace:*
+        version: link:../../packages/setup-parser
     devDependencies:
       '@types/react':
         specifier: ^18.2.6
@@ -75,6 +78,19 @@ importers:
       langchain:
         specifier: ^0.0.96
         version: 0.0.96(axios@0.26.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^18.16.0
+        version: 18.19.103
+      typescript:
+        specifier: ^5.0.4
+        version: 5.8.3
+
+  packages/setup-parser:
+    dependencies:
+      ini:
+        specifier: ^4.1.1
+        version: 4.1.3
     devDependencies:
       '@types/node':
         specifier: ^18.16.0
@@ -1224,6 +1240,10 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
+
+  ini@4.1.3:
+    resolution: {integrity: sha512-X7rqawQBvfdjS10YU1y1YVreA3SsLrW9dX2CewP2EbBJM4ypVNLDkO5y04gejPwKIY9lR+7r9gn3rFPt/kmWFg==}
+    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
   is-any-array@2.0.1:
     resolution: {integrity: sha512-UtilS7hLRu++wb/WBAw9bNuP1Eg04Ivn1vERJck8zJthEvXCBEBpGR/33u/xLKWEQf95803oalHrVDptcAvFdQ==}
@@ -3432,6 +3452,8 @@ snapshots:
       wrappy: 1.0.2
 
   inherits@2.0.4: {}
+
+  ini@4.1.3: {}
 
   is-any-array@2.0.1: {}
 

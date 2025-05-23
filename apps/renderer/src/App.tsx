@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Paper, AppBar, Toolbar, Button, Grid } from '@mui/material';
+import { Box, Container, Typography, Paper, AppBar, Toolbar, Button, Grid, Tab, Tabs } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import SaveIcon from '@mui/icons-material/Save';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import BuildIcon from '@mui/icons-material/Build';
+import SetupContainer from './components/SetupContainer';
 
 // Define interfaces for our app
 interface SetupFile {
@@ -19,30 +19,47 @@ interface TelemetryFile {
   content: string;
 }
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`app-tabpanel-${index}`}
+      aria-labelledby={`app-tab-${index}`}
+      {...other}
+      style={{ height: '100%' }}
+    >
+      {value === index && (
+        <Box sx={{ height: '100%' }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `app-tab-${index}`,
+    'aria-controls': `app-tabpanel-${index}`,
+  };
+}
+
 function App() {
-  const [setupFile, setSetupFile] = useState<SetupFile | null>(null);
+  const [setupFile, setSetupFile] = useState<SetupFile | null>(null); // Used in generateSetupSuggestions
   const [telemetryFile, setTelemetryFile] = useState<TelemetryFile | null>(null);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [tabValue, setTabValue] = useState(0);
 
-  // Handle opening a setup file
-  const handleOpenSetupFile = async () => {
-    try {
-      const filePath = await window.electronAPI.openFile();
-      if (!filePath) return;
-      
-      const fileName = filePath.split('/').pop() || 'unknown.sto';
-      const content = await window.electronAPI.readFile(filePath);
-      
-      setSetupFile({
-        path: filePath,
-        name: fileName,
-        content
-      });
-    } catch (error) {
-      console.error('Error opening setup file:', error);
-      alert('Failed to open setup file');
-    }
-  };
+
 
   // Handle opening a telemetry file
   const handleOpenTelemetryFile = async () => {
@@ -64,23 +81,7 @@ function App() {
     }
   };
 
-  // Handle saving a setup file
-  const handleSaveSetupFile = async () => {
-    if (!setupFile) {
-      alert('No setup file to save');
-      return;
-    }
 
-    try {
-      const savedPath = await window.electronAPI.saveFile(setupFile.path, setupFile.content);
-      if (savedPath) {
-        alert(`Setup saved to ${savedPath}`);
-      }
-    } catch (error) {
-      console.error('Error saving setup file:', error);
-      alert('Failed to save setup file');
-    }
-  };
 
   // Placeholder for AI agent functions
   const runTelemetryAnalysis = () => {
@@ -103,6 +104,10 @@ function App() {
     alert('Setup suggestions generated');
   };
 
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppBar position="static">
@@ -116,103 +121,125 @@ function App() {
         </Toolbar>
       </AppBar>
       
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-        <Grid container spacing={3}>
-          {/* File Operations Panel */}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2, display: 'flex', gap: 2 }}>
-              <Button 
-                variant="contained" 
-                startIcon={<UploadFileIcon />}
-                onClick={handleOpenSetupFile}
-              >
-                Load Setup
-              </Button>
-              <Button 
-                variant="contained" 
-                startIcon={<UploadFileIcon />}
-                onClick={handleOpenTelemetryFile}
-              >
-                Load Telemetry
-              </Button>
-              <Button 
-                variant="contained" 
-                startIcon={<SaveIcon />}
-                onClick={handleSaveSetupFile}
-                disabled={!setupFile}
-              >
-                Save Setup
-              </Button>
-            </Paper>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="app tabs">
+          <Tab label="Setup Editor" {...a11yProps(0)} />
+          <Tab label="Telemetry Analysis" {...a11yProps(1)} />
+          <Tab label="AI Suggestions" {...a11yProps(2)} />
+        </Tabs>
+      </Box>
+      
+      <Container maxWidth="xl" sx={{ mt: 2, mb: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <TabPanel value={tabValue} index={0}>
+          <SetupContainer 
+            onSetupLoaded={(setup) => {
+              console.log('Setup loaded:', setup);
+              // Additional logic can be added here
+            }}
+            onSetupSaved={(setup, path) => {
+              console.log('Setup saved:', setup, 'to path:', path);
+              // Additional logic can be added here
+            }}
+          />
+        </TabPanel>
+        
+        <TabPanel value={tabValue} index={1}>
+          <Grid container spacing={3} sx={{ height: '100%' }}>
+            {/* Telemetry Tools Panel */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, display: 'flex', gap: 2 }}>
+                <Button 
+                  variant="contained" 
+                  startIcon={<UploadFileIcon />}
+                  onClick={handleOpenTelemetryFile}
+                >
+                  Load Telemetry
+                </Button>
+                <Button 
+                  variant="contained" 
+                  color="secondary"
+                  startIcon={<AnalyticsIcon />}
+                  onClick={runTelemetryAnalysis}
+                  disabled={!telemetryFile}
+                >
+                  Analyze Telemetry
+                </Button>
+              </Paper>
+            </Grid>
+            
+            {/* Telemetry Display */}
+            <Grid item xs={12} sx={{ flexGrow: 1 }}>
+              <Paper sx={{ p: 2, height: '100%', overflow: 'auto' }}>
+                <Typography variant="h6" gutterBottom>
+                  {telemetryFile ? `Telemetry: ${telemetryFile.name}` : 'No Telemetry Loaded'}
+                </Typography>
+                {telemetryFile && (
+                  <pre style={{ whiteSpace: 'pre-wrap' }}>
+                    {telemetryFile.content.slice(0, 500)}...
+                  </pre>
+                )}
+                
+                {analysisResult && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(144, 202, 249, 0.1)', borderRadius: 1 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Analysis Results:
+                    </Typography>
+                    <Typography variant="body2">
+                      {analysisResult}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
           </Grid>
-          
-          {/* AI Tools Panel */}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2, display: 'flex', gap: 2 }}>
-              <Button 
-                variant="contained" 
-                color="secondary"
-                startIcon={<AnalyticsIcon />}
-                onClick={runTelemetryAnalysis}
-                disabled={!telemetryFile}
-              >
-                Analyze Telemetry
-              </Button>
-              <Button 
-                variant="contained" 
-                color="secondary"
-                startIcon={<BuildIcon />}
-                onClick={generateSetupSuggestions}
-                disabled={!setupFile}
-              >
-                Generate Setup Suggestions
-              </Button>
-            </Paper>
-          </Grid>
-          
-          {/* Main Content Area */}
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2, height: '60vh', overflow: 'auto' }}>
-              <Typography variant="h6" gutterBottom>
-                {setupFile ? `Setup: ${setupFile.name}` : 'No Setup Loaded'}
-              </Typography>
-              {setupFile && (
-                <pre style={{ whiteSpace: 'pre-wrap' }}>
-                  {setupFile.content}
-                </pre>
-              )}
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 2, height: '60vh', overflow: 'auto' }}>
-              <Typography variant="h6" gutterBottom>
-                {telemetryFile ? `Telemetry: ${telemetryFile.name}` : 'No Telemetry Loaded'}
-              </Typography>
-              {telemetryFile && (
-                <pre style={{ whiteSpace: 'pre-wrap' }}>
-                  {telemetryFile.content.slice(0, 500)}...
-                </pre>
-              )}
-              
-              {analysisResult && (
-                <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(144, 202, 249, 0.1)', borderRadius: 1 }}>
+        </TabPanel>
+        
+        <TabPanel value={tabValue} index={2}>
+          <Grid container spacing={3} sx={{ height: '100%' }}>
+            {/* AI Tools Panel */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2, display: 'flex', gap: 2 }}>
+                <Button 
+                  variant="contained" 
+                  color="secondary"
+                  startIcon={<BuildIcon />}
+                  onClick={generateSetupSuggestions}
+                >
+                  Generate Setup Suggestions
+                </Button>
+              </Paper>
+            </Grid>
+            
+            {/* AI Suggestions Display */}
+            <Grid item xs={12} sx={{ flexGrow: 1 }}>
+              <Paper sx={{ p: 2, height: '100%', overflow: 'auto' }}>
+                <Typography variant="h6" gutterBottom>
+                  AI Setup Suggestions
+                </Typography>
+                <Typography variant="body2">
+                  Load a setup file and telemetry data, then click "Generate Setup Suggestions" to get AI-powered recommendations for improving your car setup.
+                </Typography>
+                
+                {/* This would be replaced with actual AI suggestions */}
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(144, 202, 249, 0.1)', borderRadius: 1, display: 'none' }}>
                   <Typography variant="subtitle1" gutterBottom>
-                    Analysis Results:
+                    Suggested Changes:
                   </Typography>
-                  <Typography variant="body2">
-                    {analysisResult}
-                  </Typography>
+                  <ul>
+                    <li>Increase front spring rate by 5000 N/m to improve turn-in response</li>
+                    <li>Decrease rear toe by 0.05° to reduce oversteer on corner exit</li>
+                    <li>Increase front tire pressures by 2 kPa for better tire temperature</li>
+                  </ul>
                 </Box>
-              )}
-            </Paper>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
+        </TabPanel>
       </Container>
       
       <Box component="footer" sx={{ p: 2, bgcolor: 'background.paper' }}>
         <Typography variant="body2" color="text.secondary" align="center">
-          Auriga Setup AI © {new Date().getFullYear()}
+          Auriga Setup AI &copy; {new Date().getFullYear()}
         </Typography>
       </Box>
     </Box>
